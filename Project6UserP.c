@@ -11,13 +11,7 @@ using namespace std;
 
 int main()
 {
-	struct processControlBlock p;
-	p.state = 0;
-	p.totalCPUTime = 0;
-	p.totalSysTime = 0;
-	p.lastBurstTime = 0;
-	p.pPriority = 0;
-
+	printf("In user process");
 	
 
 	return 0;

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -10,13 +11,54 @@ void child();
 #define SHMKEY 859047
 #define BUFF_SZ sizeof ( int )
 
+typedef struct QNode
+{
+	struct QNode *prev, *next;
+	unsigned pageNumber;
+} QNode;
+
+typedef struct Queue 
+{
+	unsigned count;
+	unsigned numberOfFrames;
+	QNode *front, *rear;
+} Queue;
+
+typedef struct Hash
+{
+	int capacity;
+	QNode** array;
+} Hash;
+
+QNode* newQNode(unsigned pageNumber)
+{
+	QNode* temp = (QNode*)malloc(sizeof(QNode));
+	temp->pageNumber = pageNumber;
+
+	temp->prev = temp->next = NULL;
+	
+	return temp;
+}
+
+Queue* createQueue(int numberOfFrames)
+{
+	Queue* queue = (Queue*)malloc(sizeof(Queue));
+
+	queue->count = 0;
+	queue->front = queue->rear = NULL;
+
+	queue->numberOfFrames = numberOfFrames;
+
+	return queue;
+}
+
 int main(){	
 	const unsigned int maxTimeBetweenNewProcsNS = 1000000;
 	const unsigned int maxTimeBetweenNewProcsSecs = 1;
 	int procCount = 0;
 	int lastProcNan = 0;
 	int lastProcSec = 0;
-	
+	int frameTable = [][];	
 
 	switch ( fork() )
 	{
