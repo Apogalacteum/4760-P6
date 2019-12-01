@@ -1,44 +1,14 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include <unistd.h>
-#include <sys/shm.h>
+#include <sys/types.h>
 #include <sys/ipc.h>
+#include <sys/shm.h>
 
 void parent();
 void child();
 
 #define SHMKEY 859047
 #define BUFF_SZ sizeof ( int )
-
-using namespace std;
-
-struct Semaphore {
-	int value;
-	Queue<process> q;
-};
-
-P(struct Semaphore s)
-{
-	s.value = s.value - 1;
-	if (s.value < 0)
-	{
-		q.push(p);
-		block();
-	}
-	else
-		return;
-};
-
-V(struct Semaphore s)
-{
-	s.value = s.value + 1;
-	if (s.value <= 0)
-	{
-		q.pop();
-		wakeup(p);
-	}
-};
 
 int main(){	
 	const unsigned int maxTimeBetweenNewProcsNS = 1000000;
@@ -51,7 +21,7 @@ int main(){
 	switch ( fork() )
 	{
 		case -1:
-			cerr << "Failed to Fork" << endl;
+			printf("Failed to Fork");
 			return ( 1 );
 
 		case 0:
@@ -71,18 +41,19 @@ void parent()
 	int shmid = shmget ( SHMKEY, BUFF_SZ, 0777 | IPC_CREAT );
 	if ( shmid == -1 )
 	{
-		cerr << "Parent: ... Error in shmget ..." << endl;
+		printf("Parent: ... Error in shmget ...");
 		exit (1);
 	}
 
 	char * paddr = ( char * )( shmat ( shmid, 0, 0 ) );
 	int * pint = ( int * )( paddr );
 
-	for ( int i ( 0 ); i < 10; i++ )
+	int i = 0;
+	for ( i = 0 ; i < 10; i++ )
 	{
 		sleep ( 2 );
 		*pint = 10 *i ;
-		cout << "Parent: Written Val.: = " << *pint << endl;
+		printf("Parent: Written Val.: = "); //*pint;
 	}
 }
 
@@ -93,15 +64,16 @@ void child()
 
 	if ( shmid == -1 )
 	{
-		cerr << "Child: ... Error in shmget ..." << endl;
+		printf("Child: ... Error in shmget ...");
 		exit ( 1 );
 	}
 
 	int * cint = (int * )( shmat ( shmid, 0, 0 ) );
 
-	for ( int i ( 0 ); i < 10; i++ )
+	int i = 0;
+	for ( i = 0; i < 10; i++ )
 	{
 		sleep ( 1 );
-		cout << "Child: Read Val. = " << *cint << endl;
+		printf("Child: Read Val. = "); //*cint << endl;
 	}
 }
